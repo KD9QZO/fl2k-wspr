@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # WSPR protocol encoding script
 #
 # Input: callsign/locator/power
@@ -15,21 +16,24 @@ ALPHABET_IDX = {c:i for i,c in enumerate(ALPHABET)}
 LOC_ALPHABET = 'ABCDEFGHIJKLMNOPQR'
 LOC_ALPHABET_IDX = {c:i for i,c in enumerate(LOC_ALPHABET)}
 
-SYNC = [1,1,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,1,0,0,1,0,1,1,1,
-        1,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,
-        0,0,0,0,1,0,1,1,0,0,1,1,0,1,0,0,0,1,1,0,1,0,0,0,0,1,
-        1,0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,
-        1,1,0,0,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,
-        1,1,1,0,1,1,0,0,1,1,0,1,0,0,0,1,
-        1,1,0,0,0,0,0,1,0,1,0,0,1,1,0,0,0,0,0,0,0,1,1,0,1,0,
-        1,1,0,0,0,1,1,0,0,0]
+SYNC = [
+    1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0,
+    0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+    1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
+    1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
+    1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0,
+    1, 1, 0, 0, 0, 1, 1, 0, 0, 0
+]
+
 
 def encode_word(callsign, locator, dbm):
     if not callsign[2].isnumeric():
         assert callsign[1].isnumeric()
         callsign = ' ' + callsign
     if len(callsign) < 6:
-        callsign = callsign + (' ' * (6-len(callsign)))
+        callsign = callsign + (' ' * (6 - len(callsign)))
     assert len(callsign) == 6
 
     callsign = [ALPHABET_IDX[c] for c in callsign]
@@ -40,21 +44,19 @@ def encode_word(callsign, locator, dbm):
     assert callsign[5] >= 10
 
     n_callsign = callsign[0]
-    n_callsign = 36*n_callsign + callsign[1]
-    n_callsign = 10*n_callsign + callsign[2]
-    n_callsign = 27*n_callsign + (callsign[3]-10)
-    n_callsign = 27*n_callsign + (callsign[4]-10)
-    n_callsign = 27*n_callsign + (callsign[5]-10)
-    assert n_callsign < 37*36*10*27*27*27
+    n_callsign = 36 * n_callsign + callsign[1]
+    n_callsign = 10 * n_callsign + callsign[2]
+    n_callsign = 27 * n_callsign + (callsign[3] - 10)
+    n_callsign = 27 * n_callsign + (callsign[4] - 10)
+    n_callsign = 27 * n_callsign + (callsign[5] - 10)
+    assert n_callsign < 37 * 36 * 10 * 27 * 27 * 27
 
     assert len(locator) == 4
     assert locator[2:].isnumeric()
 
-    locator = [LOC_ALPHABET_IDX[c] for c in locator[:2]] + \
-              [ALPHABET_IDX[c] for c in locator[2:]]
+    locator = [LOC_ALPHABET_IDX[c] for c in locator[:2]] + [ALPHABET_IDX[c] for c in locator[2:]]
 
-    n_locator = (179 - 10*locator[0] - locator[2])*180 + \
-                10*locator[1] + locator[3]
+    n_locator = (179 - 10 * locator[0] - locator[2]) * 180 + 10 * locator[1] + locator[3]
     assert n_locator >= 179
     assert n_locator <= 32220
 
@@ -62,7 +64,7 @@ def encode_word(callsign, locator, dbm):
     assert dbm < 64
     n_dbm = 64 + dbm
 
-    n = (n_callsign << (15+7)) | (n_locator << 7) | n_dbm
+    n = (n_callsign << (15 + 7)) | (n_locator << 7) | n_dbm
 
     # MSB -> LSB order
     return n
@@ -99,7 +101,7 @@ def interleave(s):
         assert x >= 0 and x <= 255
         return int("{0:08b}".format(x)[::-1], 2)
 
-    d = [None]*162
+    d = [None] * 162
     s_i = 0
     for i in range(256):
         d_i = byte_bit_reverse(i)
@@ -119,13 +121,14 @@ def wspr_encode(callsign, locator, dbm):
     symbols = [s + 2*x for s, x in zip(SYNC, interleaved)]
     return symbols
 
-#http://g4jnt.com/Coding/WSPR_Coding_Process.pdf
+# http://g4jnt.com/Coding/WSPR_Coding_Process.pdf
 def tx_frequency(base_freq, code):
-    freq = base_freq + (code*1.4648)
+    freq = base_freq + (code * 1.4648)
     return freq
 
 if __name__ == '__main__':
     import sys
+
     if len(sys.argv) < 4:
         print('Usage: %s callsign locator dbm [base_freq]' % sys.argv[0])
         sys.exit(1)
@@ -134,6 +137,7 @@ if __name__ == '__main__':
     dbm = int(sys.argv[3])
     print('{%s}' % ','.join(
         str(x) for x in wspr_encode(callsign, locator, dbm)))
+
     if len(sys.argv) == 5:
         print()
         base_freq = float(sys.argv[4])
@@ -142,5 +146,4 @@ if __name__ == '__main__':
         for code in wspr_encode(callsign, locator, dbm):
             print(tx_frequency(base_freq, code))
             #print("./vgaplay -c %f -t %f" % (tx_frequency(base_freq, code), symbol_length))
-
 
