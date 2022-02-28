@@ -1,0 +1,15 @@
+#
+# .gitignore
+#
+
+## BACKUP & TEMPORARY FILES ##
+
+*~
+*.bak
+*.tmp
+
+
+## BUILD ARTIFACTS ##
+
+*.o
+fl2k-wspr
